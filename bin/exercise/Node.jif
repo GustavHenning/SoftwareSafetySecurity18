@@ -2,12 +2,10 @@ package exercise;
 
 // Implement the Node class of LinkedList
 // Add annotations to the methods and field
-// Only Alice and Bob are allowed to access the integers stored in the list
-// Alice, Bob and Chuck are allowed to know how many elements are in the list
 // Write the annotations (labels) for fields and methods.
 public class  Node  {
-	public int {*->Alice, Bob}value;
-	public Node {*->Alice, Bob, Chuck} next;
+	private int {*->Alice, Bob}value;
+	private Node {*->Alice, Bob, Chuck} next;
 
 	public Node(int {*->Alice, Bob} value) {
 		this.value = value;
@@ -18,7 +16,8 @@ public class  Node  {
 		this.next = new Node(value);
 	}
 
-	public int length {*->Alice, Bob, Chuck} () {
+	// Alice, Bob and Chuck are allowed to know how many elements are in the list
+	public int length {*->*} () {
 		Node {*->Alice, Bob, Chuck} n = next;
 		if(n == null){
 			return 0;
@@ -26,7 +25,8 @@ public class  Node  {
 		return 1 + n.length();
 	}
 
-	// Throws exception for  negative parameters
+	// Only Alice and Bob are allowed to access the integers stored in the list
+	// Throws exception for negative parameters
 	public int get {*->Alice, Bob} (int {*->Alice, Bob} i) : {*->Alice, Bob} throws Exception {
 		Node {*->Alice, Bob} n = this.next;
 		if(i == 0){

@@ -1,3 +1,7 @@
+.classpath
+.externalToolBuilders/*
+.project
+
 # Compiled class file
 *.class
 

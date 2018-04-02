@@ -4,7 +4,7 @@ package exercise;
 // Add annotations to the methods and field
 // Write the annotations (labels) for fields and methods.
 public class  Node  {
-	private int {*->Alice, Bob}value;
+	private int {*->Alice, Bob} value;
 	private Node {*->Alice, Bob, Chuck} next;
 
 	public Node(int {*->Alice, Bob} value) {
@@ -17,8 +17,9 @@ public class  Node  {
 	}
 
 	// Alice, Bob and Chuck are allowed to know how many elements are in the list
-	public int length {*->*} () {
-		Node {*->Alice, Bob, Chuck} n = next;
+	public int length {*->Alice, Bob, Chuck} () {
+		Node {*->Alice, Bob, Chuck} n = this.next;
+		
 		if(n == null){
 			return 0;
 		}

@@ -19,7 +19,6 @@ public class  Node  {
 	// Alice, Bob and Chuck are allowed to know how many elements are in the list
 	public int length {*->Alice, Bob, Chuck} () {
 		Node {*->Alice, Bob, Chuck} n = this.next;
-		
 		if(n == null){
 			return 0;
 		}

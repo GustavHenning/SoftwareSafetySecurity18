@@ -1,0 +1,76 @@
+package tinder;
+
+
+public class DatingApp01 authority (Bob, Chuck, Alice) {
+	private double {Alice->Alice} aX;
+	private double {Alice->Alice} aY;
+	private String {Alice->Alice} aP;
+	
+	private double {Bob->Bob} bX;
+	private double {Bob->Bob} bY;
+	private String {Bob->Bob} bP;
+	
+	private double {Chuck->Chuck} cX;
+	private double {Chuck->Chuck} cY;
+	private String {Chuck->Chuck} cP;
+	
+	private NodeAlice aliceLikes;
+	private NodeBob bobLikes;
+	private NodeChuck chuckLikes;
+	
+	public void updateAlice {Alice->Alice} (double {Alice->Alice} x, double {Alice->Alice} y, String {Alice->Alice} Phone) {
+		this.aX = x;
+		this.aY = y;
+		this.aP = Phone;
+	}
+	public void updateBob {Bob->Bob} (double {Bob->Bob} x, double {Bob->Bob} y, String {Bob->Bob} Phone) {
+		this.bX = x;
+		this.bY = y;
+		this.bP = Phone;
+	} 
+	public void updateChuck {Chuck->Chuck} (double {Chuck->Chuck} x, double {Chuck->Chuck} y, String {Chuck->Chuck} Phone) {
+		this.cX = x;
+		this.cY = y;
+		this.cP = Phone;
+	}
+	
+	public NodeAlice {Alice->Alice} findAliceNeighbours {Alice->Alice} () where authority (Bob, Chuck) {
+		/* There's some interesting clash of integrity policy of the caller pc which shouldnt be there */
+		double {Bob->Alice} bobX = declassify(bX, {Bob->Bob} to {Bob->Alice});
+		double {Bob->Alice} bobY = declassify(bY, {Bob->Bob} to {Bob->Alice});
+		NodeAlice {Alice->Alice} na = null;
+		int {Alice->Alice} distance = new Double((aX - bobX)*(aX - bobX) + (aY - bobY)*(aY - bobY)).intValue();
+		
+		if(distance <= 10*10){
+			na = new NodeAlice(Bob, distance);	
+		}
+		
+		double {Chuck->Alice} chuckX = declassify(cX, {Chuck->Chuck} to {Chuck->Alice});
+		double {Chuck->Alice} chuckY = declassify(cY, {Chuck->Chuck} to {Chuck->Alice});
+		distance = new Double((aX - chuckX)*(aX - chuckX) + (aY - chuckY)*(aY - chuckY)).intValue();
+		
+		if(distance <= 10*10){
+			na = NodeAlice.append(na, new NodeAlice(Chuck, distance));			
+		}
+		
+		return na;
+		
+	}
+	
+	
+	public void addAliceLike(principal user)  {
+		return;
+	}
+	
+	private boolean {Alice->Alice} isAliceInBobLikes() : {Alice->Alice}  {
+		return true;
+	}
+	
+	public boolean {Alice->Alice} isAliceInChuckLikes() : {Alice->Alice} {
+		return true;
+	}
+
+	public String{Alice->Alice} discloseNumberToAlice(principal user) {
+		return null;
+	}
+}

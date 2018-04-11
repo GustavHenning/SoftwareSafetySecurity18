@@ -1,0 +1,33 @@
+package tinder;
+
+public class  NodeAlice  {
+	public principal user; 
+	public int {Alice->Alice} distance;
+	public NodeAlice {Alice->Alice} next;
+
+	public NodeAlice(principal user, int distance) {
+		this.user = user;
+    	this.distance = distance;
+    	this.next = null;
+	}
+
+	public void add {Alice->Alice} (NodeAlice node)  {
+		if(this.next == null) {
+			this.next = node;
+			return;
+		}
+		NodeAlice {Alice->Alice} n = next;
+		while(n != null){
+			n = n.next;
+		}
+		n.next = node;
+	}
+	
+	// If a is null, returns b, otherwise appends b to a and returns a
+	public static NodeAlice append (NodeAlice a, NodeAlice b) {
+		if(a == null)
+			return b;
+		a.add(b);
+		return a;
+	} 
+}

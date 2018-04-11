@@ -1,0 +1,33 @@
+package tinder;
+
+public class  NodeChuck  {
+	public principal user; 
+	public int {Chuck->Chuck} distance;
+	public NodeChuck {Chuck->Chuck} next;
+
+	public NodeChuck(principal user, int distance) {
+		this.user = user;
+    	this.distance = distance;
+    	this.next = null;
+	}
+
+	public void add {Chuck->Chuck} (NodeChuck node)  {
+		if(this.next == null) {
+			this.next = node;
+			return;
+		}
+		NodeChuck {Chuck->Chuck} n = next;
+		while(n != null){
+			n = n.next;
+		}
+		n.next = node;
+	}
+	
+	// If a is null, returns b, otherwise appends b to a and returns a
+	public static NodeChuck append (NodeChuck a, NodeChuck b) {
+		if(a == null)
+			return b;
+		a.add(b);
+		return a;
+	} 
+}

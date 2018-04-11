@@ -1,0 +1,33 @@
+package tinder;
+
+public class  NodeBob  {
+	public principal user; 
+	public int {Bob->Bob} distance;
+	public NodeBob {Bob->Bob} next;
+
+	public NodeBob(principal user, int distance) {
+		this.user = user;
+    	this.distance = distance;
+    	this.next = null;
+	}
+
+	public void add {Bob->Bob} (NodeBob node)  {
+		if(this.next == null) {
+			this.next = node;
+			return;
+		}
+		NodeBob {Bob->Bob} n = next;
+		while(n != null){
+			n = n.next;
+		}
+		n.next = node;
+	}
+	
+	// If a is null, returns b, otherwise appends b to a and returns a
+	public static NodeBob append (NodeBob a, NodeBob b) {
+		if(a == null)
+			return b;
+		a.add(b);
+		return a;
+	} 
+}

@@ -10,6 +10,7 @@ package exercise;
 public class Node2 authority(Alice & Bob) {
 	int {Alice->Alice; Bob->Bob; Chuck->Chuck} value;
 	Node2 {Alice->Alice,Bob,Chuck; Bob->Alice,Bob,Chuck; Chuck->Alice,Bob,Chuck} next;
+	
 
 	public Node2(int {Alice->Alice; Bob->Bob; Chuck->Chuck} value) {
 		this.value = value;
@@ -70,4 +71,6 @@ public class Node2 authority(Alice & Bob) {
 		return declassify(mean, {Alice->Chuck;Bob->Chuck;Chuck->Chuck} to {Chuck->Chuck});
 		//return mean;
 	}
+	
+
 }

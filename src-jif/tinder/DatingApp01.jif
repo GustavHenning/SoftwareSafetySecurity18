@@ -34,23 +34,25 @@ public class DatingApp01 authority (Bob, Chuck, Alice) {
 		this.cP = Phone;
 	}
 	
-	public NodeAlice {Alice->Alice} findAliceNeighbours {Alice->Alice} () where authority (Bob, Chuck) {
-		/* There's some interesting clash of integrity policy of the caller pc which shouldnt be there */
-		double {Bob->Alice} bobX = declassify(bX, {Bob->Bob} to {Bob->Alice});
-		double {Bob->Alice} bobY = declassify(bY, {Bob->Bob} to {Bob->Alice});
-		NodeAlice {Alice->Alice} na = null;
-		int {Alice->Alice} distance = new Double((aX - bobX)*(aX - bobX) + (aY - bobY)*(aY - bobY)).intValue();
+	public NodeAlice {Alice->Alice} findAliceNeighbours {Alice, Bob->Alice; Alice, Chuck->Alice} () where authority (Bob, Chuck) {
+	
+		double {Bob->Alice} bobX = declassify(bX, {Bob->Bob; Alice, Chuck->Alice} to {Bob->Alice});
+		double {Bob->Alice} bobY = declassify(bY, {Bob->Bob; Alice, Chuck->Alice} to {Bob->Alice});
 		
-		if(distance <= 10*10){
-			na = new NodeAlice(Bob, distance);	
-		}
+		NodeAlice na = null;
+		int distanceBob = new Double((aX - bobX)*(aX - bobX) + (aY - bobY)*(aY - bobY)).intValue();
 		
-		double {Chuck->Alice} chuckX = declassify(cX, {Chuck->Chuck} to {Chuck->Alice});
-		double {Chuck->Alice} chuckY = declassify(cY, {Chuck->Chuck} to {Chuck->Alice});
-		distance = new Double((aX - chuckX)*(aX - chuckX) + (aY - chuckY)*(aY - chuckY)).intValue();
+		if(distanceBob <= 10*10){
+			na = new NodeAlice(Bob, distanceBob);	
+		} 
 		
-		if(distance <= 10*10){
-			na = NodeAlice.append(na, new NodeAlice(Chuck, distance));			
+		double {Chuck->Alice} chuckX = declassify(cX, {Chuck->Chuck; Alice, Bob->Alice} to {Chuck->Alice});
+		double {Chuck->Alice} chuckY = declassify(cY, {Chuck->Chuck; Alice, Bob->Alice} to {Chuck->Alice});
+		int {Alice->Alice} distanceChuck = new Double((aX - chuckX)*(aX - chuckX) + (aY - chuckY)*(aY - chuckY)).intValue();
+		
+		if(distanceChuck <= 10*10){
+			NodeAlice {Alice->Alice} toAdd = new NodeAlice(Chuck, distanceChuck);
+			na = NodeAlice.append(na, toAdd);			
 		}
 		
 		return na;

@@ -1,0 +1,19 @@
+package tinder2;
+
+public class  Node[principal P]  {
+	public principal {P->P}user; 
+	public int {P->P} distance;
+	public Node[P] {P->P} next;
+
+	public Node(principal user, int distance) {
+	
+	}
+
+	public void add(Node[P] node)  {
+		return;
+	}
+	
+	public static Node[P] append(Node[P] a, Node[P] b) {
+		return null;
+	} 
+}

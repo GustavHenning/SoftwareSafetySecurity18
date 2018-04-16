@@ -1,30 +1,35 @@
 package tinder;
 
 public class  NodeChuck  {
-	public principal user; 
-	public int {Chuck->Chuck} distance;
+	public principal {Alice->Chuck; Bob->Chuck;Chuck->Chuck} user; 
+	public int {Alice->Chuck; Bob->Chuck;Chuck->Chuck} distance;
 	public NodeChuck {Chuck->Chuck} next;
 
-	public NodeChuck(principal user, int distance) {
+	public NodeChuck(principal {Alice->Chuck; Bob->Chuck;Chuck->Chuck} user, int {Alice->Chuck; Bob->Chuck;Chuck->Chuck} distance) {
 		this.user = user;
     	this.distance = distance;
     	this.next = null;
 	}
 
-	public void add {Chuck->Chuck} (NodeChuck node)  {
+	public void add {Chuck->Chuck} (NodeChuck {Chuck->Chuck} node) {
 		if(this.next == null) {
 			this.next = node;
 			return;
 		}
-		NodeChuck {Chuck->Chuck} n = next;
-		while(n != null){
+		NodeChuck {Chuck->Chuck} n = this.next;
+
+		while(n != null && n.next != null){
 			n = n.next;
 		}
-		n.next = node;
+		if(n == null) {
+			n = node;
+		} else {
+			n.next = node;		
+		}
 	}
 	
 	// If a is null, returns b, otherwise appends b to a and returns a
-	public static NodeChuck append (NodeChuck a, NodeChuck b) {
+	public static NodeChuck {Chuck->Chuck} append {Chuck->Chuck} (NodeChuck {Chuck->Chuck} a, NodeChuck {Chuck->Chuck} b) {
 		if(a == null)
 			return b;
 		a.add(b);

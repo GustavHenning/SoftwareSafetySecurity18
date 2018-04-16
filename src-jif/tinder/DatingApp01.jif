@@ -14,7 +14,7 @@ public class DatingApp01 authority (Bob, Chuck, Alice) {
 	private double {Chuck->Chuck} cY;
 	private String {Chuck->Chuck} cP;
 	
-	private NodeAlice aliceLikes;
+	private NodeAlice {Alice->Alice} aliceLikes = null;
 	private NodeBob bobLikes;
 	private NodeChuck chuckLikes;
 	
@@ -60,8 +60,20 @@ public class DatingApp01 authority (Bob, Chuck, Alice) {
 	}
 	
 	
-	public void addAliceLike(principal user)  {
-		return;
+	public void addAliceLike {Alice, Bob->Alice; Alice, Chuck->Alice} (principal {Alice, Bob->Alice; Alice, Chuck->Alice} user) {
+		NodeAlice  nodes = findAliceNeighbours();
+		if(nodes == null){
+			return;
+		}
+		do {
+			if(nodes.user == user){
+				NodeAlice toAdd = new NodeAlice(nodes.user, nodes.distance);
+				aliceLikes = NodeAlice.append(aliceLikes, toAdd);
+				return;
+			}
+			nodes = nodes.next;
+			
+		} while(nodes != null && nodes.next != null);
 	}
 	
 	private boolean {Alice->Alice} isAliceInBobLikes() : {Alice->Alice}  {

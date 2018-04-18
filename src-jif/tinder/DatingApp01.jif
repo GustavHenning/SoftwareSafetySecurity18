@@ -15,8 +15,8 @@ public class DatingApp01 authority (Bob, Chuck, Alice) {
 	private String {Chuck->Chuck} cP;
 	
 	private NodeAlice {Alice->Alice} aliceLikes = null;
-	private NodeBob bobLikes;
-	private NodeChuck chuckLikes;
+	private NodeBob {Bob->Bob} bobLikes = null;
+	private NodeChuck {Chuck->Chuck} chuckLikes = null;
 	
 	public void updateAlice {Alice->Alice} (double {Alice->Alice} x, double {Alice->Alice} y, String {Alice->Alice} Phone) {
 		this.aX = x;
@@ -35,23 +35,21 @@ public class DatingApp01 authority (Bob, Chuck, Alice) {
 	}
 	
 	public NodeAlice {Alice->Alice} findAliceNeighbours {Alice, Bob->Alice; Alice, Chuck->Alice} () where authority (Bob, Chuck) {
-	
-		double {Bob->Alice} bobX = declassify(bX, {Bob->Bob; Alice, Chuck->Alice} to {Bob->Alice});
-		double {Bob->Alice} bobY = declassify(bY, {Bob->Bob; Alice, Chuck->Alice} to {Bob->Alice});
-		
 		NodeAlice na = null;
-		int distanceBob = new Double((aX - bobX)*(aX - bobX) + (aY - bobY)*(aY - bobY)).intValue();
+		int distanceBob = new Double((aX - bX)*(aX - bX) + (aY - bY)*(aY - bY)).intValue();
+		
+		int {Alice->Alice} publicDistanceBob = declassify(distanceBob, {Bob->Bob; Alice, Chuck->Alice} to {Alice->Alice});
 		
 		if(distanceBob <= 10*10){
-			na = new NodeAlice(Bob, distanceBob);	
+			na = new NodeAlice(Bob, publicDistanceBob);	
 		} 
 		
-		double {Chuck->Alice} chuckX = declassify(cX, {Chuck->Chuck; Alice, Bob->Alice} to {Chuck->Alice});
-		double {Chuck->Alice} chuckY = declassify(cY, {Chuck->Chuck; Alice, Bob->Alice} to {Chuck->Alice});
-		int {Alice->Alice} distanceChuck = new Double((aX - chuckX)*(aX - chuckX) + (aY - chuckY)*(aY - chuckY)).intValue();
+		int distanceChuck = new Double((aX - cX)*(aX - cX) + (aY - cY)*(aY - cY)).intValue();
+		
+		int {Alice->Alice} publicDistanceChuck = declassify(distanceChuck, {Chuck->Chuck; Alice, Bob->Alice} to {Alice->Alice});
 		
 		if(distanceChuck <= 10*10){
-			NodeAlice {Alice->Alice} toAdd = new NodeAlice(Chuck, distanceChuck);
+			NodeAlice {Alice->Alice} toAdd = new NodeAlice(Chuck, publicDistanceChuck);
 			na = NodeAlice.append(na, toAdd);			
 		}
 		
@@ -76,15 +74,64 @@ public class DatingApp01 authority (Bob, Chuck, Alice) {
 		} while(nodes != null && nodes.next != null);
 	}
 	
-	private boolean {Alice->Alice} isAliceInBobLikes() : {Alice->Alice}  {
-		return true;
+	
+	private boolean {Alice->Alice} isAliceInBobLikes {Alice->Alice} () : {Alice->Alice} where authority (Bob, Chuck) {
+		
+		NodeBob {Alice->Alice} nodes = declassify(bobLikes, {Bob->Bob; Alice->Alice} to {Alice->Alice});
+		
+		if(nodes == null) {
+			return false;
+		}
+		
+		
+		while(nodes != null) {
+			principal user = declassify(nodes.user, {Alice→Alice; Bob→Bob; Chuck→Bob} to  {Alice->Alice});
+			if(user == Alice) {
+				return true;
+			} else {
+				nodes = declassify(nodes.next, {Bob→Bob; Alice→Alice} to {Alice->Alice});
+			}
+		}
+		return false;
 	}
 	
-	public boolean {Alice->Alice} isAliceInChuckLikes() : {Alice->Alice} {
-		return true;
+	public boolean {Alice->Alice} isAliceInChuckLikes {Alice->Alice} () : {Alice->Alice} where authority (Bob, Chuck) {
+		
+		NodeChuck {Alice->Alice} nodes = declassify(chuckLikes, {Chuck->Chuck; Alice->Alice} to {Alice->Alice});
+		
+		if(nodes == null) {
+			return false;
+		}
+		
+		
+		while(nodes != null) {
+			principal user = declassify(nodes.user, {Alice→Alice; Chuck→Chuck} to  {Alice->Alice});
+			if(user == Alice) {
+				return true;
+			} else {
+				nodes = declassify(nodes.next, {Chuck→Chuck; Alice→Alice} to {Alice->Alice});
+			}
+		}
+		return false;
 	}
 
-	public String{Alice->Alice} discloseNumberToAlice(principal user) {
+	public String{Alice->Alice} discloseNumberToAlice {Alice->Alice} (principal {Alice->Alice} user) where authority(Bob, Chuck) {
+		NodeAlice nodes = aliceLikes;
+		while(nodes != null){
+			if(nodes.user == user){
+				if(user == Bob) {
+					if(isAliceInBobLikes()){
+						return declassify(bP, {Alice->Alice;Bob->Bob} to {Alice->Alice});
+					}
+				} else if (user == Chuck) {
+					if(isAliceInChuckLikes()){
+						return declassify(cP, {Alice->Alice;Chuck->Chuck} to {Alice->Alice});
+					}
+				}
+			} else {
+				nodes = nodes.next;
+			}
+		}
 		return null;
 	}
 }

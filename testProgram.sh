@@ -15,7 +15,7 @@ if [[ ! $JIF_FILE_ARG ]]; then
 	exit 1
 fi
 
-$JIF_PATH/bin/jifc -c -d /tmp -classpath ./bin -sourcepath src-jif -explain $JIF_FILE_ARG
+$JIF_PATH/bin/jifc -c -nonrobust -d /tmp -classpath ./bin -sourcepath src-jif -explain $JIF_FILE_ARG
 
 if [[ $? -eq 0 ]]; then
 	FILENAME=$(basename $JIF_FILE_ARG .jif)

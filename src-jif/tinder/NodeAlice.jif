@@ -1,11 +1,11 @@
 package tinder;
 
 public class NodeAlice  {
-	public principal {Alice->Alice; Bob->Alice;Chuck->Alice} user; 
-	public int {Alice->Alice; Bob->Alice;Chuck->Alice} distance;
+	public principal {Alice->Alice} user; 
+	public int {Alice->Alice} distance;
 	public NodeAlice {Alice->Alice} next;
 
-	public NodeAlice(principal {Alice->Alice; Bob->Alice;Chuck->Alice} user, int {Alice->Alice; Bob->Alice;Chuck->Alice} distance) {
+	public NodeAlice(principal {Alice->Alice} user, int {Alice->Alice} distance) {
 		this.user = user;
     	this.distance = distance;
     	this.next = null;

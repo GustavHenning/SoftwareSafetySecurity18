@@ -1,11 +1,11 @@
 package tinder;
 
 public class  NodeChuck  {
-	public principal {Alice->Chuck; Bob->Chuck;Chuck->Chuck} user; 
-	public int {Alice->Chuck; Bob->Chuck;Chuck->Chuck} distance;
+	public principal {Chuck->Chuck} user; 
+	public int {Chuck->Chuck} distance;
 	public NodeChuck {Chuck->Chuck} next;
 
-	public NodeChuck(principal {Alice->Chuck; Bob->Chuck;Chuck->Chuck} user, int {Alice->Chuck; Bob->Chuck;Chuck->Chuck} distance) {
+	public NodeChuck(principal {Chuck->Chuck} user, int {Chuck->Chuck} distance) {
 		this.user = user;
     	this.distance = distance;
     	this.next = null;

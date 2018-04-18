@@ -1,11 +1,11 @@
 package tinder;
 
 public class  NodeBob  {
-	public principal {Alice->Bob; Bob->Bob;Chuck->Bob}  user; 
-	public int {Alice->Bob; Bob->Bob;Chuck->Bob} distance;
+	public principal {Bob->Bob}  user; 
+	public int {Bob->Bob} distance;
 	public NodeBob {Bob->Bob} next;
 
-	public NodeBob(principal {Alice->Bob; Bob->Bob;Chuck->Bob} user, int {Alice->Bob; Bob->Bob;Chuck->Bob} distance) {
+	public NodeBob(principal {Bob->Bob} user, int {Bob->Bob} distance) {
 		this.user = user;
     	this.distance = distance;
     	this.next = null;

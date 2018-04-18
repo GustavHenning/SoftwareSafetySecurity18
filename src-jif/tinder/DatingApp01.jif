@@ -58,7 +58,7 @@ public class DatingApp01 authority (Bob, Chuck, Alice) {
 	}
 	
 	
-	public void addAliceLike {Alice, Bob->Alice; Alice, Chuck->Alice}  (principal {Alice, Bob->Alice; Alice, Chuck->Alice} user) {
+	public void addAliceLike {Alice, Bob->Alice; Alice, Chuck->Alice}  (principal {Alice->Alice} user) {
 		NodeAlice nodes = findAliceNeighbours();
 		if(nodes == null){
 			return;

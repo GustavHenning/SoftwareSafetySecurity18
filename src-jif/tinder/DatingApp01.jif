@@ -1,54 +1,62 @@
 package tinder;
 
 
+
 public class DatingApp01 authority (Bob, Chuck, Alice) {
 	private double {Alice->Alice} aX;
 	private double {Alice->Alice} aY;
 	private String {Alice->Alice} aP;
+	private double {Alice->Alice} maxDistAlice;
 	
 	private double {Bob->Bob} bX;
 	private double {Bob->Bob} bY;
 	private String {Bob->Bob} bP;
+	private double {Bob->Bob} maxDistBob;
 	
 	private double {Chuck->Chuck} cX;
 	private double {Chuck->Chuck} cY;
 	private String {Chuck->Chuck} cP;
+	private double {Chuck->Chuck} maxDistChuck;
 	
 	private NodeAlice {Alice->Alice} aliceLikes = null;
 	private NodeBob {Bob->Bob} bobLikes = null;
 	private NodeChuck {Chuck->Chuck} chuckLikes = null;
 	
-	public void updateAlice {Alice->Alice} (double {Alice->Alice} x, double {Alice->Alice} y, String {Alice->Alice} Phone) {
+	public void updateAlice {Alice->Alice} (double {Alice->Alice} x, double {Alice->Alice} y, String {Alice->Alice} Phone, double {Alice->Alice} maxDistAlice) {
 		this.aX = x;
 		this.aY = y;
 		this.aP = Phone;
+		this.maxDistAlice = maxDistAlice;
 	}
-	public void updateBob {Bob->Bob} (double {Bob->Bob} x, double {Bob->Bob} y, String {Bob->Bob} Phone) {
+
+	public void updateBob {Bob->Bob} (double {Bob->Bob} x, double {Bob->Bob} y, String {Bob->Bob} Phone, double {Bob->Bob} maxDistBob) {
 		this.bX = x;
 		this.bY = y;
 		this.bP = Phone;
+		this.maxDistBob = maxDistBob;
 	} 
-	public void updateChuck {Chuck->Chuck} (double {Chuck->Chuck} x, double {Chuck->Chuck} y, String {Chuck->Chuck} Phone) {
+	public void updateChuck {Chuck->Chuck} (double {Chuck->Chuck} x, double {Chuck->Chuck} y, String {Chuck->Chuck} Phone, double {Chuck->Chuck} maxDistChuck) {
 		this.cX = x;
 		this.cY = y;
 		this.cP = Phone;
+		this.maxDistChuck = maxDistChuck;
 	}
 	
-	public NodeAlice {Alice->Alice} findAliceNeighbours {Alice, Bob->Alice; Alice, Chuck->Alice} () where authority (Bob, Chuck) {
+	public NodeAlice {Alice->Alice} findAliceNeighbours {Alice->Alice} () where authority (Bob, Chuck) {
 		NodeAlice na = null;
 		int distanceBob = new Double((aX - bX)*(aX - bX) + (aY - bY)*(aY - bY)).intValue();
 		
-		int {Alice->Alice} publicDistanceBob = declassify(distanceBob, {Bob->Bob; Alice, Chuck->Alice} to {Alice->Alice});
+		int {Alice->Alice} publicDistanceBob = declassify(distanceBob, {Bob->Bob; Alice->Alice} to {Alice->Alice});
 		
-		if(distanceBob <= 10*10){
+		if(publicDistanceBob <= maxDistAlice*maxDistAlice){
 			na = new NodeAlice(Bob, publicDistanceBob);	
 		} 
 		
 		int distanceChuck = new Double((aX - cX)*(aX - cX) + (aY - cY)*(aY - cY)).intValue();
 		
-		int {Alice->Alice} publicDistanceChuck = declassify(distanceChuck, {Chuck->Chuck; Alice, Bob->Alice} to {Alice->Alice});
+		int {Alice->Alice} publicDistanceChuck = declassify(distanceChuck, {Chuck->Chuck; Alice->Alice} to {Alice->Alice});
 		
-		if(distanceChuck <= 10*10){
+		if(publicDistanceChuck <= maxDistAlice*maxDistAlice){
 			NodeAlice {Alice->Alice} toAdd = new NodeAlice(Chuck, publicDistanceChuck);
 			na = NodeAlice.append(na, toAdd);			
 		}

@@ -1,8 +1,0 @@
-package tinder2;
-
-public class User [principal P] {
-	public double  positionX;
-	public double  positionY;
-	public String  phone;
-
-}

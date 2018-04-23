@@ -5,10 +5,10 @@ VAR
 ASSIGN
 	init(state) := idle;
 	next(state) := case
-		state = idle & running: { idle, entering };
-		state = entering & !semaphore & running: critical;
-		state = critical & running : { critical, exiting };
-		state = exiting & running : idle;
+		state = idle : { idle, entering };
+		state = entering & !semaphore: critical;
+		state = critical : { critical, exiting };
+		state = exiting  : idle;
 		TRUE : state;
 	esac;
 	next(semaphore) := case
@@ -27,6 +27,12 @@ VAR
 	proc2 : process user(semaphore, next(running) = 1);
 ASSIGN
 	init(semaphore) := FALSE;
+	next(semaphore) := case
+	/-- Dont allow semaphore switches if critical --/
+		semaphore = (proc2.state = critical) : FALSE;
+		semaphore = (proc1.state = critical) : TRUE;
+		TRUE : semaphore;
+	esac;
 SPEC -- safety
 	AG !(proc1.state = critical & proc2.state = critical);
 SPEC -- liveness

@@ -57,7 +57,7 @@ ASSIGN
 LTLSPEC
 
   !((torch != next(torch) -> count(location[0] != next(location[0]), location[1] != next(location[1]), location[2] != next(location[2]), location[3] != next(location[3])) <= 2 & count(location[0] != next(location[0]), location[1] != next(location[1]), location[2] != next(location[2]), location[3] != next(location[3])) > 0)
-     U (location[0] & location[1] & location[2] & location[3] & time <= 17));
+     U G (location[0] & location[1] & location[2] & location[3] & time <= 17));
 
 
 /-- ERROR TRACE

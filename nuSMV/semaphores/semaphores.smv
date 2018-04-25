@@ -5,29 +5,88 @@ VAR
 ASSIGN
 	init(state) := idle;
 	next(state) := case
-		state = idle & running: { idle, entering };
-		state = entering & !semaphore & running: critical;
-		state = critical & running : { critical, exiting };
-		state = exiting & running : idle;
+		state = idle & active			: { idle, entering };
+		state = entering & !semaphore & active	: critical;
+		state = critical & active		: { critical, exiting };
+		state = exiting  & active		: idle;
 		TRUE : state;
 	esac;
-	next(semaphore) := case
-		-- not sure if this should contain running too
-		state = entering : TRUE;
-		state = exiting : FALSE;
-		TRUE : semaphore;
-	esac;
-	
+
+FAIRNESS
+	state = idle;
+
 MODULE main
-FAIRNESS running;
 VAR
-	semaphore : boolean;
-	-- doesnt compile? running: 0..1;
-	proc1 : process user(semaphore, next(running) = 0);
-	proc2 : process user(semaphore, next(running) = 1);
+	semaphore : boolean;	
+	running: 0..1;
+	proc1 : user(semaphore, next(running) = 0);
+	proc2 : user(semaphore, next(running) = 1);
+
 ASSIGN
 	init(semaphore) := FALSE;
-SPEC -- safety
+	next(semaphore) := case
+		proc1.state = entering & !semaphore & proc1.active : TRUE;
+		proc2.state = entering & !semaphore & proc2.active : TRUE;
+		proc1.state = idle & proc2.state = idle : FALSE;
+		proc1.state = critical | proc2.state = critical : TRUE;
+		proc1.state = exiting & proc1.active : FALSE;
+		proc2.state = exiting & proc2.active : FALSE;
+		TRUE : semaphore;
+	esac;
+
+FAIRNESS
+	running = 0;
+FAIRNESS
+	running = 1;
+
+SPEC -- safety 
 	AG !(proc1.state = critical & proc2.state = critical);
 SPEC -- liveness
 	AG (proc1.state = entering -> AF proc1.state = critical);
+
+/--
+When FAIRNESS state = idle; is missing: 
+
+-- specification AG !(proc1.state = critical & proc2.state = critical)  is true
+-- specification AG (proc1.state = entering -> AF proc1.state = critical)  is false
+-- as demonstrated by the following execution sequence
+Trace Description: CTL Counterexample 
+Trace Type: Counterexample 
+  -> State: 1.1 <-
+    semaphore = FALSE
+    running = 0
+    proc1.state = idle
+    proc2.state = idle
+  -> State: 1.2 <-
+    proc1.state = entering
+  -> State: 1.3 <-
+    running = 1
+  -> State: 1.4 <-
+    proc2.state = entering
+  -- Loop starts here
+  -> State: 1.5 <-
+    semaphore = TRUE
+    proc2.state = critical
+  -> State: 1.6 <-
+    running = 0
+  -- Loop starts here
+  -> State: 1.7 <-
+    running = 1
+  -> State: 1.8 <-
+    running = 0
+  -> State: 1.9 <-
+    running = 1
+
+
+Explanation: proc2 never wants to exit the critical section (semaphore) so proc1 starves.
+
+When
+FAIRNESS
+	running = 0;
+FAIRNESS
+	running = 1;
+is missing:
+
+Tests passed. Normally it prevents running from always being one value.
+
+--/

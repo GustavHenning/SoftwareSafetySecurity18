@@ -5,35 +5,39 @@ VAR
 ASSIGN
 	init(state) := idle;
 	next(state) := case
-		state = idle : { idle, entering };
-		state = entering & !semaphore: critical;
-		state = critical : { critical, exiting };
-		state = exiting  : idle;
+		state = idle & active			: { idle, entering };
+		state = entering & !semaphore & active	: critical;
+		state = critical & active		: { critical, exiting };
+		state = exiting  & active		: idle;
 		TRUE : state;
 	esac;
-	next(semaphore) := case
-		-- not sure if this should contain running too
-		state = entering : TRUE;
-		state = exiting : FALSE;
-		TRUE : semaphore;
-	esac;
-	
+
+FAIRNESS
+	state = idle;
 MODULE main
-FAIRNESS running;
 VAR
-	semaphore : boolean;
-	-- doesnt compile? running: 0..1;
-	proc1 : process user(semaphore, next(running) = 0);
-	proc2 : process user(semaphore, next(running) = 1);
+	semaphore : boolean;	
+	running: 0..1;
+	proc1 : user(semaphore, next(running) = 0);
+	proc2 : user(semaphore, next(running) = 1);
+
 ASSIGN
 	init(semaphore) := FALSE;
 	next(semaphore) := case
-	/-- Dont allow semaphore switches if critical --/
-		semaphore = (proc2.state = critical) : FALSE;
-		semaphore = (proc1.state = critical) : TRUE;
+		proc1.state = entering & !semaphore & proc1.active : TRUE;
+		proc2.state = entering & !semaphore & proc2.active : TRUE;
+		proc1.state = idle & proc2.state = idle : FALSE;
+		proc1.state = critical | proc2.state = critical : TRUE;
+		proc1.state = exiting & proc1.active : FALSE;
+		proc2.state = exiting & proc2.active : FALSE;
 		TRUE : semaphore;
 	esac;
-SPEC -- safety
+FAIRNESS
+	running = 0;
+
+FAIRNESS
+	running = 1;
+SPEC -- safety 
 	AG !(proc1.state = critical & proc2.state = critical);
 SPEC -- liveness
 	AG (proc1.state = entering -> AF proc1.state = critical);

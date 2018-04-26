@@ -183,7 +183,7 @@ MODULE CTRL(floor, door, pressed_1, pressed_2, pressed_3)
   --   move up (down).
   -- * Otherwise, do not send commands to the cabin.
   ASSIGN
-    init(direction) := up;
+    init(direction) := stop;
     next(direction) :=
       case
 	earthquake : stop;

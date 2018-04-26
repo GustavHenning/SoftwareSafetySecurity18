@@ -2,6 +2,13 @@
 .externalToolBuilders/*
 .project
 
+jpf-core/.classpath
+jpf-core/.externalToolBuilders/*
+jpf-core/.project
+jpf-core/.metadata/*
+.metadata/*
+lib/*
+
 # Compiled class file
 *.class
 

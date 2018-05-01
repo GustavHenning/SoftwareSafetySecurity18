@@ -16,7 +16,7 @@
 -- controller. A button that is not pressed can become pressed
 -- nondeterministically.
 
-MODULE Button(reset, earthquake)
+MODULE Button(reset, earthquake, state)
   VAR
     pressed : boolean;
   ASSIGN
@@ -24,14 +24,15 @@ MODULE Button(reset, earthquake)
     next(pressed) :=
       case
 	earthquake : FALSE;
+	state = waiting : FALSE;
         pressed & reset  : FALSE;
         pressed & !reset : TRUE;
         !pressed         : {FALSE,TRUE};
       esac;
 
   -- REQ: The controller must not reset a button that is not pressed.
-  LTLSPEC 
-	(reset -> pressed);
+	LTLSPEC (reset -> pressed);
+
 
 ---------------------------------------------------------------------------
 -- CABIN                                                                 --
@@ -64,16 +65,13 @@ MODULE Cabin(direction, earthquake, pending)
 				   floor = 3 : {1, 2};
 				   TRUE : floor;
                                  esac;
-      esac; 
-
+      esac;
 
   -- REQ: The cabin can move up only if the floor is not N.
-  LTLSPEC
-	(next(direction) = up -> floor < N);
+	LTLSPEC (next(direction) = up -> floor < N);
 
   -- REQ: The cabin can move down only if the floor is not 1.
-  LTLSPEC
-	(next(direction) = down -> floor > 1);
+	LTLSPEC (next(direction) = down -> floor > 1);
 
 
 ---------------------------------------------------------------------------
@@ -98,13 +96,9 @@ MODULE Door(door_cmd)
       esac;
 
   -- REQ: The controller can issue an open command only if the door is closed.
-  LTLSPEC
-	(door_cmd = open -> status = closed);
-
+	LTLSPEC (door_cmd = open -> status = closed);
   -- REQ: The controller can issue a close command only if the door is open.
-  LTLSPEC
-	(door_cmd = closed -> status = open);
-
+	LTLSPEC (door_cmd = close -> status = open);
 
 
 ---------------------------------------------------------------------------
@@ -126,6 +120,7 @@ MODULE CTRL(floor, door, pressed_1, pressed_2, pressed_3)
     sensor : boolean;
     earthquake : boolean;
     repair : boolean;
+    state : {ready, waiting};
 
   -- Button N is reset only if it is pressed, we are at floor N, and
   -- the door is open.
@@ -145,7 +140,8 @@ MODULE CTRL(floor, door, pressed_1, pressed_2, pressed_3)
 
     pending_down := (floor = 3 & (pressed_1 | pressed_2)) |
                     (floor = 2 & pressed_1) ;
-    pending := pending_up | pending_down | pending_here;
+
+    pending := pending_here | pending_up | pending_down;
 
   -- * If the cabin is moving, do not send commands to the door.
   -- * If there is a pending request at the current floor and
@@ -156,10 +152,12 @@ MODULE CTRL(floor, door, pressed_1, pressed_2, pressed_3)
   ASSIGN
     door_cmd :=
       case
-	direction = stop & earthquake : open;
+	direction = stop & state = waiting & door = open : nop;
+	direction = stop & earthquake & door = closed: open;
 	direction = up | direction = down : nop;
 	direction = stop & pending_here & door = closed: open;
-	direction = stop & (pending_up | pending_down) & door = open & !sensor : close;
+	direction = stop & (pending_up | pending_down) & door = open & !sensor: close;
+	direction = stop & !pending & floor != 1 & door = open : close;
 	direction = stop & !pending & floor = 1 & door = closed : open;
 	TRUE : nop; 
       esac;
@@ -187,14 +185,16 @@ MODULE CTRL(floor, door, pressed_1, pressed_2, pressed_3)
     next(direction) :=
       case
 	earthquake : stop;
+	state = waiting : stop;
 	door = open : stop;
-	!pending_here & !pending_down & !pending_up & floor != 1 : down;
-        !pending_here & !pending_down & !pending_up & floor = 1 : stop;
+	!pending & floor != 1 : down;
+	!pending & floor = 1 : stop;
 	pending_here & (direction = up | direction = down) : stop;
 	pending_down & pending_up : last_dir;
 	pending_down & !pending_up : down;
 	pending_up & !pending_down :up;
 	TRUE: stop; 
+
       esac;
 
   ASSIGN
@@ -212,23 +212,32 @@ MODULE CTRL(floor, door, pressed_1, pressed_2, pressed_3)
 	TRUE: {TRUE, FALSE};
       esac;
 
+  ASSIGN
+    repair :=
+      case 
+	state = waiting & !earthquake & door = open & direction = stop : TRUE;
+	earthquake : FALSE;
+	TRUE : FALSE;
+      esac;
+
+  ASSIGN
+    init(state) := ready;
+    next(state) :=
+      case
+	earthquake : waiting;
+	state = waiting & repair : ready;
+	TRUE : state;
+      esac;	
+
+FAIRNESS sensor = TRUE;
+FAIRNESS sensor = FALSE;
+FAIRNESS earthquake = FALSE;
+
+
   -- The cabin needs to stop before it can change direction.
   SPEC AG(direction = up) -> AX(direction != down)
   SPEC AG(direction = down) -> AX(direction != up)
 
-  ASSIGN
-    init(earthquake) := FALSE;
-    init(repair) := FALSE;
-    next(repair) :=
-      case 
-	earthquake : FALSE;
-	earthquake & !next(earthquake) & door = open & direction = stop : TRUE;
-	TRUE : FALSE;
-      esac;
-    
-FAIRNESS sensor = TRUE;
-FAIRNESS sensor = FALSE;
- 
   LTLSPEC -- The door never closes when the sensor is on
 	(sensor -> (door = open U !sensor));
 
@@ -243,7 +252,6 @@ FAIRNESS sensor = FALSE;
 
   LTLSPEC -- If there is an earthquake, repair eventually occurs
 	(earthquake -> F repair);
-
 ---------------------------------------------------------------------------
 -- MAIN                                                                  --
 ---------------------------------------------------------------------------
@@ -254,9 +262,9 @@ MODULE main
   VAR
     cabin : Cabin(ctrl.direction, ctrl.earthquake, ctrl.pending);
     door  : Door(ctrl.door_cmd);
-    button_1 : Button(ctrl.reset_1, ctrl.earthquake);
-    button_2 : Button(ctrl.reset_2, ctrl.earthquake);
-    button_3 : Button(ctrl.reset_3, ctrl.earthquake);
+    button_1 : Button(ctrl.reset_1, ctrl.earthquake, ctrl.state);
+    button_2 : Button(ctrl.reset_2, ctrl.earthquake, ctrl.state);
+    button_3 : Button(ctrl.reset_3, ctrl.earthquake, ctrl.state);
     ctrl : CTRL(cabin.floor, door.status,
                 button_1.pressed, button_2.pressed,
                 button_3.pressed);
@@ -280,41 +288,39 @@ LTLSPEC
   -- REQ: No pressed button can be reset until the cabin stops at the
   --      corresponding floor and opens the door.
 LTLSPEC
-	(button_1.pressed -> (!ctrl.reset_1 U (cabin.floor = 1 & ctrl.direction = stop)));
+	(button_1.pressed -> (!ctrl.reset_1 U (cabin.floor = 1 & ctrl.direction = stop & door.status = open)));
 LTLSPEC
-	(button_2.pressed -> (!ctrl.reset_2 U (cabin.floor = 2 & ctrl.direction = stop))); 
+	(button_2.pressed -> (!ctrl.reset_2 U (cabin.floor = 2 & ctrl.direction = stop & door.status = open))); 
 LTLSPEC
-	(button_3.pressed -> (!ctrl.reset_3 U (cabin.floor = 3 & ctrl.direction = stop))); 
- 
+	(button_3.pressed -> (!ctrl.reset_3 U (cabin.floor = 3 & ctrl.direction = stop & door.status = open))); 
+
 
   -- REQ: A button must be reset as soon as the cabin stops at the
   --      corresponding floor with the door open.
 LTLSPEC
-	(button_1.pressed & cabin.floor = 1 & ctrl.direction = stop -> next(ctrl.reset_1));
+	(button_1.pressed & cabin.floor = 1 & ctrl.direction = stop & door.status = open -> ctrl.reset_1);
 LTLSPEC
-	(button_2.pressed & cabin.floor = 2 & ctrl.direction = stop -> next(ctrl.reset_2));
+	(button_2.pressed & cabin.floor = 2 & ctrl.direction = stop & door.status = open -> ctrl.reset_2);
 LTLSPEC
-	(button_3.pressed & cabin.floor = 3 & ctrl.direction = stop -> next(ctrl.reset_3));
+	(button_3.pressed & cabin.floor = 3 & ctrl.direction = stop & door.status = open -> ctrl.reset_3);
 
   -- REQ: The cabin can move only when the door is closed.
 LTLSPEC
 	(ctrl.direction = up | ctrl.direction = down -> door.status = closed);
 
+
   -- REQ: If no button is pressed, the controller must issue no commands
   --      and the cabin must be stopped.
-
-/-- OLD SPEC BEFORE LOBBY MODE
+/-- OLD SPEC BEFORE LOBBY MODE 
 LTLSPEC
-	(!button_1.pressed & !button_2.pressed & !button_3.pressed -> ctrl.direction = stop & ctrl.door_cmd = nop);
+	(!button_1.pressed & !button_2.pressed & !button_3.pressed & !ctrl.earthquake -> ctrl.direction = stop & ctrl.door_cmd = nop);
 --/
 LTLSPEC
-	(!button_1.pressed & !button_2.pressed & !button_3.pressed -> (F(cabin.floor = 1) U (!button_1.pressed & !button_2.pressed & !button_3.pressed & !ctrl.earthquake)));
+	(!button_1.pressed & !button_2.pressed & !button_3.pressed & !ctrl.earthquake -> (F(cabin.floor = 1) U (!button_1.pressed & !button_2.pressed & !button_3.pressed)));
 
 LTLSPEC -- If there is an earthquake, the cabin stops and the buttons are ignored until repairs
-	(ctrl.earthquake -> next(ctrl.direction) = stop & F(ctrl.repair) & (G(!button_1.pressed & !button_2.pressed & !button_3.pressed) U ctrl.repair));
-
-
----------------------------------------------------------------------------
+	(ctrl.earthquake -> next(ctrl.direction) = stop & ((!button_1.pressed & !button_2.pressed & !button_3.pressed) U ctrl.repair));
+---------------------------------------------------------------------------------
 
 /-- DOCUMENTATION ERROR TRACE
 
@@ -402,3 +408,4 @@ Trace Type: Counterexample
     ctrl.pending_here = TRUE
 
 --/
+

@@ -42,7 +42,7 @@ MODULE Button(reset, earthquake, state)
 -- engine that has a direction of motion, that can be either stopped, up
 -- or down.
 
-MODULE Cabin(direction, earthquake, pending)
+MODULE Cabin(direction)
   DEFINE N:=3;
 
   VAR
@@ -53,16 +53,13 @@ MODULE Cabin(direction, earthquake, pending)
       case
         next(direction) = stop : floor;
         next(direction) = up   : case
-				   floor = 1 & earthquake : 2;
-				   floor = 1 : {2, 3};				   
+				   floor = 1 : 2;				   
 				   floor = 2 : 3;
 				   TRUE: floor;
                                  esac;
         next(direction) = down : case
-				   !pending : 1;
 				   floor = 2 : 1;
-				   floor = 3 & earthquake : 2;
-				   floor = 3 : {1, 2};
+				   floor = 3 : 2;
 				   TRUE : floor;
                                  esac;
       esac;
@@ -260,7 +257,7 @@ FAIRNESS earthquake = FALSE;
 
 MODULE main
   VAR
-    cabin : Cabin(ctrl.direction, ctrl.earthquake, ctrl.pending);
+    cabin : Cabin(ctrl.direction);
     door  : Door(ctrl.door_cmd);
     button_1 : Button(ctrl.reset_1, ctrl.earthquake, ctrl.state);
     button_2 : Button(ctrl.reset_2, ctrl.earthquake, ctrl.state);
@@ -307,18 +304,28 @@ LTLSPEC
   -- REQ: The cabin can move only when the door is closed.
 LTLSPEC
 	(ctrl.direction = up | ctrl.direction = down -> door.status = closed);
+LTLSPEC (door.status = open -> ctrl.direction = stop); -- same 
 
 
+/-- OLD SPEC BEFORE LOBBY MODE
+ 
   -- REQ: If no button is pressed, the controller must issue no commands
   --      and the cabin must be stopped.
-/-- OLD SPEC BEFORE LOBBY MODE 
+ 
 LTLSPEC
 	(!button_1.pressed & !button_2.pressed & !button_3.pressed & !ctrl.earthquake -> ctrl.direction = stop & ctrl.door_cmd = nop);
 --/
-LTLSPEC
-	(!button_1.pressed & !button_2.pressed & !button_3.pressed & !ctrl.earthquake -> (F(cabin.floor = 1) U (!button_1.pressed & !button_2.pressed & !button_3.pressed)));
 
-LTLSPEC -- If there is an earthquake, the cabin stops and the buttons are ignored until repairs
+
+  -- REQ : Lobby mode -> If no button is pressed (and no earthquake), the cabin goes
+  -- 	   to floor 1 and wait for other commands.
+  
+LTLSPEC
+	(((ctrl.direction = down) | (ctrl.direction = stop & cabin.floor = 1)) & !button_1.pressed & !button_2.pressed & !button_3.pressed) U (ctrl.earthquake | ctrl.pending);
+
+  -- REQ: If there is an earthquake, the cabin stops 
+  -- 	  and the buttons are ignored until repairs.
+LTLSPEC 
 	(ctrl.earthquake -> next(ctrl.direction) = stop & ((!button_1.pressed & !button_2.pressed & !button_3.pressed) U ctrl.repair));
 ---------------------------------------------------------------------------------
 

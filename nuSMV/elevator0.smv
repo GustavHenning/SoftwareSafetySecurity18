@@ -285,27 +285,25 @@ LTLSPEC
   -- REQ: No pressed button can be reset until the cabin stops at the
   --      corresponding floor and opens the door.
 LTLSPEC
-	(button_1.pressed -> (!ctrl.reset_1 U (cabin.floor = 1 & ctrl.direction = stop & door.status = open)));
+	(button_1.pressed -> (button_1.pressed U ((cabin.floor = 1 & door.status = open) | (ctrl.earthquake))));
 LTLSPEC
-	(button_2.pressed -> (!ctrl.reset_2 U (cabin.floor = 2 & ctrl.direction = stop & door.status = open))); 
+	(button_2.pressed -> (button_2.pressed U ((cabin.floor = 2 & door.status = open) | (ctrl.earthquake)))); 
 LTLSPEC
-	(button_3.pressed -> (!ctrl.reset_3 U (cabin.floor = 3 & ctrl.direction = stop & door.status = open))); 
+	(button_3.pressed -> (button_3.pressed U ((cabin.floor = 3 & door.status = open) | (ctrl.earthquake)))); 
 
 
   -- REQ: A button must be reset as soon as the cabin stops at the
   --      corresponding floor with the door open.
 LTLSPEC
-	(button_1.pressed & cabin.floor = 1 & ctrl.direction = stop & door.status = open -> ctrl.reset_1);
+	(button_1.pressed & cabin.floor = 1 & door.status = open -> !button_1.pressed);
 LTLSPEC
-	(button_2.pressed & cabin.floor = 2 & ctrl.direction = stop & door.status = open -> ctrl.reset_2);
+	(button_2.pressed & cabin.floor = 2 & door.status = open -> !button_2.pressed);
 LTLSPEC
-	(button_3.pressed & cabin.floor = 3 & ctrl.direction = stop & door.status = open -> ctrl.reset_3);
+	(button_3.pressed & cabin.floor = 3 & door.status = open -> !button_3.pressed);
 
   -- REQ: The cabin can move only when the door is closed.
 LTLSPEC
-	(ctrl.direction = up | ctrl.direction = down -> door.status = closed);
-LTLSPEC (door.status = open -> ctrl.direction = stop); -- same 
-
+	(next(ctrl.direction) = up | next(ctrl.direction) = down -> door.status = closed);
 
 /-- OLD SPEC BEFORE LOBBY MODE
  
@@ -313,7 +311,7 @@ LTLSPEC (door.status = open -> ctrl.direction = stop); -- same
   --      and the cabin must be stopped.
  
 LTLSPEC
-	(!button_1.pressed & !button_2.pressed & !button_3.pressed & !ctrl.earthquake -> ctrl.direction = stop & ctrl.door_cmd = nop);
+	(!button_1.pressed & !button_2.pressed & !button_3.pressed & !ctrl.earthquake -> next(ctrl.direction) = stop & ctrl.door_cmd = nop);
 --/
 
 
@@ -321,7 +319,7 @@ LTLSPEC
   -- 	   to floor 1 and wait for other commands.
   
 LTLSPEC
-	(((ctrl.direction = down) | (ctrl.direction = stop & cabin.floor = 1)) & !button_1.pressed & !button_2.pressed & !button_3.pressed) U (ctrl.earthquake | ctrl.pending);
+	(!button_1.pressed & !button_2.pressed & !button_3.pressed & !ctrl.earthquake) U (ctrl.earthquake | ctrl.pending | cabin.floor = 1);
 
   -- REQ: If there is an earthquake, the cabin stops 
   -- 	  and the buttons are ignored until repairs.
@@ -413,6 +411,91 @@ Trace Type: Counterexample
     ctrl.earthquake = TRUE
     ctrl.repair = FALSE
     ctrl.pending_here = TRUE
+
+
+
+WRONG SPECIFICATION : By changing door.status = open instead of door.status = closed then we have a counter-example where the door is closed when the cabin moves. (From state 1 to state 2)
+
+-- specification ((next(ctrl.direction) = up | next(ctrl.direction) = down) -> door.status = open)  is false
+-- as demonstrated by the following execution sequence
+Trace Description: LTL Counterexample 
+Trace Type: Counterexample 
+  -- Loop starts here
+  -> State: 1.1 <-
+    cabin.floor = 2
+    door.status = closed
+    button_1.pressed = FALSE
+    button_2.pressed = FALSE
+    button_3.pressed = FALSE
+    ctrl.direction = stop
+    ctrl.door_cmd = nop
+    ctrl.reset_1 = FALSE
+    ctrl.reset_2 = FALSE
+    ctrl.reset_3 = FALSE
+    ctrl.sensor = FALSE
+    ctrl.earthquake = FALSE
+    ctrl.repair = FALSE
+    ctrl.state = ready
+    ctrl.last_dir = up
+    cabin.N = 3
+    ctrl.pending = FALSE
+    ctrl.pending_down = FALSE
+    ctrl.pending_up = FALSE
+    ctrl.pending_here = FALSE
+  -> State: 1.2 <-
+    cabin.floor = 1
+    button_1.pressed = TRUE
+    ctrl.direction = down
+    ctrl.pending = TRUE
+    ctrl.pending_here = TRUE
+  -> State: 1.3 <-
+    button_3.pressed = TRUE
+    ctrl.direction = stop
+    ctrl.door_cmd = open
+    ctrl.last_dir = down
+    ctrl.pending_up = TRUE
+  -> State: 1.4 <-
+    cabin.floor = 2
+    door.status = open
+    ctrl.direction = up
+    ctrl.door_cmd = nop
+    ctrl.pending_down = TRUE
+    ctrl.pending_here = FALSE
+  -> State: 1.5 <-
+    button_2.pressed = TRUE
+    ctrl.direction = stop
+    ctrl.reset_2 = TRUE
+    ctrl.sensor = TRUE
+    ctrl.last_dir = up
+    ctrl.pending_here = TRUE
+  -> State: 1.6 <-
+    button_2.pressed = FALSE
+    ctrl.door_cmd = close
+    ctrl.reset_2 = FALSE
+    ctrl.sensor = FALSE
+    ctrl.pending_here = FALSE
+  -> State: 1.7 <-
+    door.status = closed
+    ctrl.door_cmd = open
+    ctrl.earthquake = TRUE
+  -> State: 1.8 <-
+    door.status = open
+    button_1.pressed = FALSE
+    button_3.pressed = FALSE
+    ctrl.door_cmd = nop
+    ctrl.earthquake = FALSE
+    ctrl.repair = TRUE
+    ctrl.state = waiting
+    ctrl.pending = FALSE
+    ctrl.pending_down = FALSE
+    ctrl.pending_up = FALSE
+  -> State: 1.9 <-
+    ctrl.door_cmd = close
+    ctrl.repair = FALSE
+    ctrl.state = ready
+  -> State: 1.10 <-
+    door.status = closed
+    ctrl.door_cmd = nop
 
 --/
 

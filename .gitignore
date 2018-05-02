@@ -3,7 +3,8 @@
 .project
 
 jpf-core/*
-!jpf-core/src/exercise
+!jpf-core/src/examples/
+
 .metadata/*
 lib/*
 

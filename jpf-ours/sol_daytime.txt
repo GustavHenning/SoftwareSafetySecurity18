@@ -1,0 +1,82 @@
+Only in daytime-sol/src: DaytimeClient.class
+diff -urw daytime/src/DaytimeClient.java daytime-sol/src/DaytimeClient.java
+--- daytime/src/DaytimeClient.java	2016-08-17 14:18:13.000000002 +0200
++++ daytime-sol/src/DaytimeClient.java	2018-05-07 14:06:21.000000002 +0200
+@@ -3,12 +3,12 @@
+ /* Daytime client.
+  * Connects to port 1024, reads and prints one line. */
+ 
+-import java.io.BufferedReader;
++import env.java.io.BufferedReader;
+ import java.io.IOException;
+-import java.io.InputStream;
+-import java.io.InputStreamReader;
+-import java.net.InetSocketAddress;
+-import java.net.Socket;
++import env.java.io.InputStream;
++import env.java.io.InputStreamReader;
++import env.java.net.InetSocketAddress;
++import env.java.net.Socket;
+ 
+ public class DaytimeClient {
+   static final int PORT = 1024; //13
+Only in daytime-sol/src: DaytimeServer.class
+diff -urw daytime/src/DaytimeServer.java daytime-sol/src/DaytimeServer.java
+--- daytime/src/DaytimeServer.java	2017-04-25 17:09:32.000000002 +0200
++++ daytime-sol/src/DaytimeServer.java	2018-05-07 14:37:14.000000002 +0200
+@@ -4,10 +4,10 @@
+  * This modified version aborts after having served one client. */
+ 
+ import java.io.IOException;
+-import java.io.OutputStreamWriter;
+-import java.net.ServerSocket;
+-import java.net.Socket;
+-import java.util.Date;
++import env.java.io.OutputStreamWriter;
++import env.java.net.ServerSocket;
++import env.java.net.Socket;
++import env.java.util.Date;
+ 
+ public class DaytimeServer {
+ 
+@@ -33,7 +33,9 @@
+     }
+     finally {
+       try {
++            if(connection != null){
+         connection.close();
++	    }
+ 	server.close();
+       }
+       catch(IOException e) {
+Only in daytime-sol/src/env/java/io: BufferedReader.class
+Only in daytime-sol/src/env/java/io: InputStream.class
+Only in daytime-sol/src/env/java/io: InputStreamReader.class
+Only in daytime-sol/src/env/java/io: OutputStream.class
+Only in daytime-sol/src/env/java/io: OutputStreamWriter.class
+Only in daytime-sol/src/env/java/net: InetSocketAddress.class
+Only in daytime-sol/src/env/java/net: ServerSocket.class
+diff -urw daytime/src/env/java/net/ServerSocket.java daytime-sol/src/env/java/net/ServerSocket.java
+--- daytime/src/env/java/net/ServerSocket.java	2016-08-17 14:18:13.000000002 +0200
++++ daytime-sol/src/env/java/net/ServerSocket.java	2018-05-07 14:29:01.000000002 +0200
+@@ -7,12 +7,17 @@
+ import gov.nasa.jpf.vm.Verify;
+ import java.io.IOException;
+ 
++
+ public class ServerSocket {
+   
+   public ServerSocket(int port) throws IOException {
+   }
+ 
+   public Socket accept() throws IOException {
++    if (Verify.getBoolean()) {
++      throw new IOException("Simulated exception when accepting connection.");
++    }
++    System.out.println("connection accepted");
+     return new Socket();
+   }
+ 
+Only in daytime-sol/src/env/java/net: Socket.class
+Only in daytime-sol/src/env/java/util: Date.class
+Only in daytime-sol/src: error.txt

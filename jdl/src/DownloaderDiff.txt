@@ -1,0 +1,131 @@
+28,32d27
+< 	static class Lock {
+< 	}
+< 
+< 	static Lock dlLock = new Lock();
+< 
+42d36
+< 		assert(false);
+47c41
+< 	public void configure(String url_str) {
+---
+> 	public void configure (String url_str) {
+58,59c52
+< 			outputFileName = URLDecoder.decode(filename, "UTF-8").substring(
+< 					filename.indexOf("/") + 1);
+---
+> 			outputFileName = URLDecoder.decode(filename, "UTF-8").substring(filename.indexOf("/") + 1);
+91c84
+< 			die("No connection to " + url.getHost() + ", port " + port, e);
+---
+> 			die ("No connection to " + url.getHost() + ", port " + port, e);
+93,97c86,90
+< 		// pw.println("GET " + filename + " HTTP/1.0");
+< 		// if (start != 0) { // worker starting from within the payload
+< 		pw.println("Range: bytes=" + start + "-" + end);
+< 		// }
+< 		// pw.println();
+---
+> //		pw.println("GET " + filename + " HTTP/1.0");
+> //		if (start != 0) { // worker starting from within the payload
+> 			pw.println("Range: bytes=" + start + "-" + end);
+> //		}
+> //		pw.println();
+112c105
+< 			} else if (r == STATE_OK) {
+---
+> 			} else if (r == STATE_OK) {	
+131,144c124,133
+< 
+< 		synchronized (dlLock) {
+< 			if (downloaders > length) {
+< 				downloaders = length;
+< 			}
+< 			int end = length;
+< 			int chunkSize = length / (downloaders + 1);
+< 			int start = 0;
+< 			for (int i = 0; i < downloaders; i++) {
+< 				start = end - chunkSize;
+< 				new Downloader(start, end).start();
+< 				end = end - chunkSize;
+< 			}
+< 			firstWorkerStart = start;
+---
+> 		if (downloaders > length) {
+> 			downloaders = length;
+> 		}
+> 		int end = length;
+> 		int chunkSize = length / (downloaders + 1);
+> 		int start = 0;
+> 		for (int i = 0; i < downloaders; i++) {
+> 			start = end - chunkSize;
+> 			new Downloader(start, end).start();
+> 			end = end - chunkSize;
+145a135
+> 		firstWorkerStart = start;
+152,162c142,150
+< 		synchronized (dlLock) {
+< 			downloaders--;
+< 			if (downloaders == 0) { // workers finished
+< 				System.out.println("Workers finished.");
+< 				synchronized (output) {
+< 					if (firstChunkOK && !main_finished) {
+< 						try {
+< 							output.close();
+< 						} catch (IOException e) {
+< 							die("Error closing file", e);
+< 						}
+---
+> 		downloaders--;
+> 		if (downloaders == 0) { // workers finished
+> 			System.out.println("Workers finished.");
+> 			synchronized (output) {
+> 				if (firstChunkOK && !main_finished) {
+> 					try {
+> 						output.close();
+> 					} catch (IOException e) {
+> 						die("Error closing file", e);
+167,173d154
+< 
+< 	}
+< 
+< 	public int getDLS() {
+< 		synchronized (dlLock) {
+< 			return downloaders;
+< 		}
+180c161
+< 		while (ch != '\n') {
+---
+> 		while(ch != '\n') {
+218,224c199,202
+< 					synchronized (dlLock) {
+< 						synchronized (output) {
+< 							if (main_finished
+< 									|| (downloaders == 0 && firstChunkOK)) {
+< 								return; // download done
+< 							}
+< 							writeBuf(pos, r, buffer);
+---
+> 					synchronized (output) {
+> 						if (main_finished ||
+> 						    (downloaders == 0 && firstChunkOK)) {
+> 							return; // download done
+226,230c204,209
+< 						pos += r;
+< 						synchronized (output) {
+< 							if (isMain && pos >= firstWorkerStart) {
+< 								firstChunkOK = true;
+< 							}
+---
+> 						writeBuf(pos, r, buffer);
+> 					}
+> 					pos += r;
+> 					synchronized (output) {
+> 						if (isMain && pos >= firstWorkerStart) {
+> 							firstChunkOK = true;
+232d210
+< 
+252c230
+< 			die("Cannot write to file", e);
+---
+> 			die ("Cannot write to file", e);

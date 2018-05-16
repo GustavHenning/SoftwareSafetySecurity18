@@ -6,6 +6,12 @@
  *
  * Usage:
  *       psselect [-q] [-e] [-o] [-r] [-p<pages>] [infile [outfile]]
+ *
+ *
+ * TEST COMMAND: valgrind --leak-check=full --track-origins=yes ./psselect -o md71_0.ps 
+ *
+ *
+ *
  */
 
 #include "psutil.h"
@@ -41,6 +47,8 @@ static PageRange *makerange(int beg, int end, PageRange *next)
    PageRange *new;
    if ((new = (PageRange *)malloc(sizeof(PageRange))) == NULL)
       message(FATAL, "out of memory\n");
+   if (new != NULL)
+      memset(new, 0, sizeof(PageRange));
    new->last = end;
    new->next = next;
    return (new);
@@ -233,6 +241,6 @@ void main(int argc, char *argv[])
       }
    }
    writetrailer();
-
+   free(pagerange);
    exit(0);
 }

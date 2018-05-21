@@ -1,0 +1,6 @@
+46d45
+<    new->first = beg;
+237c236
+<    free(pagerange);
+---
+> 

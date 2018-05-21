@@ -1,0 +1,17 @@
+9,14d8
+<  *
+<  *
+<  * TEST COMMAND: valgrind --leak-check=full --track-origins=yes ./psselect -o md71_0.ps
+<  *
+<  *
+<  *
+47c41
+<    PageRange *new = NULL;
+---
+>    PageRange *new;
+50,52d43
+< //   if (new != NULL)
+< //      memset(new, 0, sizeof(PageRange));
+<    new->first = beg;
+244a236
+> 

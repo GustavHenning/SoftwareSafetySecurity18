@@ -1,0 +1,14 @@
+valgrind ../../psutils/psselect -q -e -r¿†-p1 -o ../../psutils/valgrind.ps
+This causes 11 errors from 3 contexts
+
+valgrind ../../psutils/psselect -q -e -r -p340282366920938463463374607431768211457 -o ../../psutils/valgrind.ps
+This causes 11 errors from 3 contexts
+
+valgrind ../../psutils/psselect -q -e -r -p170141183460469231731687303715884105728 ../../psutils/valgrind.ps
+This causes 11 errors from 3 contexts
+
+valgrind ../../psutils/psselect -r -p1-2 ../../psutils/valgrind.ps
+This causes 9 errors from 3 contexts
+
+valgrind ../../psutils/psselect -r -p340282366920938463463374607431768211454-3 ../../psutils/valgrind.ps
+This causes 11 errors from 3 contexts

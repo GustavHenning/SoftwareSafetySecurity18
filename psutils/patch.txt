@@ -1,0 +1,25 @@
+20d19
+< #include <string.h>
+146d144
+<      void *ptr = setmode(fd, O_BINARY);
+148c146
+<       if ( ptr < 0 )
+---
+>       if ( setmode(fd, O_BINARY) < 0 )
+151d148
+<     free(ptr)
+153d149
+<      void *ptr2 = setmode(fd, O_BINARY);
+155c151
+<       if ( ptr2 < 0 )
+---
+>       if ( setmode(fd, O_BINARY) < 0 )
+158d153
+<     free(ptr2);
+250,255d244
+<    if(infile != NULL){
+<      fclose(infile);
+<    }
+<    if(outfile != NULL){
+<      fclose(outfile);
+<    }
